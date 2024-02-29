@@ -4,6 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy.orm import relationship
 
+
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///farm_management.db'
 db = SQLAlchemy(app)
@@ -17,9 +18,9 @@ class User(db.Model):
     password_hash = db.Column(db.String(128))
     role = db.Column(db.String(20), nullable=False, default='user')
 
-    tasks = db.relationship('Task', backref='assigned_user', lazy=True)
-    inventory = db.relationship('Inventory', backref='user', lazy=True)
-    reports = db.relationship('Report', back_populates='user', lazy=True)
+    # tasks = db.relationship('Task', backref='assigned_user', lazy=True)
+    # inventory = db.relationship('Inventory', backref='user', lazy=True)
+    # reports = db.relationship('Report', back_populates='user', lazy=True)
 
 
     def set_password(self, password):
@@ -52,7 +53,7 @@ def check_user_credentials(email, password):
 #     email = db.Column(db.String(100), nullable=False)
 #     tasks_assigned = db.relationship('Task', backref='assigned_worker', lazy=True)
 
-# Task Model
+#Task Model
 class Task(db.Model):   
     __tablename__ = 'tasks'
 
@@ -62,32 +63,32 @@ class Task(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))  # Foreign key referencing the User table
     assigned_user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     deadline = db.Column(db.DateTime)
+    
+# class Inventory(db.Model):
+#     id = db.Column(db.Integer, primary_key=True)
+#     name = db.Column(db.String(100), nullable=False)    
+#     quantity = db.Column(db.Integer, nullable=False)
+#     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+#     user = db.relationship("User", back_populates="inventory")
 
-class Inventory(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)    
-    quantity = db.Column(db.Integer, nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    # user = db.relationship("User", back_populates="inventory")
+# class Item(db.Model):
+#     id = db.Column(db.Integer, primary_key=True)
+#     name = db.Column(db.String(100), nullable=False)
+#     description = db.Column(db.Text, nullable=True)
+#     category_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=False)
+#     category = relationship("Category", back_populates="items")
 
-class Item(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    description = db.Column(db.Text, nullable=True)
-    category_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=False)
-    category = relationship("Category", back_populates="items")
+# class Report(db.Model):
+#     id = db.Column(db.Integer, primary_key=True)
+#     title = db.Column(db.String(100), nullable=False)
+#     description = db.Column(db.Text, nullable=False)
+#     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+#     user = relationship("User", back_populates="reports")
 
-class Report(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(100), nullable=False)
-    description = db.Column(db.Text, nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    user = relationship("User", back_populates="reports")
-
-class Category(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    items = relationship("Item", back_populates="category")
+# class Category(db.Model):
+#     id = db.Column(db.Integer, primary_key=True)
+#     name = db.Column(db.String(100), nullable=False)
+#     items = relationship("Item", back_populates="category")
 
 # class Notifications(db.Model):
 #     notification_id = db.Column(db.Integer, primary_key=True)
