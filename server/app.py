@@ -4,7 +4,7 @@ from flask import Flask, jsonify, request, session, redirect, url_for
 #from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
-from models import db, User,Task,register_user, check_user_credentials
+from models import db, User,Task, register_user, check_user_credentials
 from flask_cors import CORS
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Session
@@ -31,23 +31,29 @@ with app.app_context():
 @app.route('/dashboard', methods=['GET'])
 @jwt_required()
 def dashboard():
+    # Retrieve the email of the current user from the JWT token
     current_user_email = get_jwt_identity()
+    
+    # Find the user in the database by their email
     user = User.query.filter_by(email=current_user_email).first()
+    
+    # If the user does not exist, return an error message
     if not user:
         return jsonify({"msg": "User not found"}), 404
 
-    # Assuming you have methods to serialize tasks, inventory, and reports
+    # Serialize the tasks, inventory, and reports associated with the user
+    # Ensure you have methods to serialize these items in your models
     tasks_data = [task.serialize() for task in user.tasks]
     inventory_data = [item.serialize() for item in user.inventory]
     reports_data = [report.serialize() for report in user.reports]
     
+    # Return the data as JSON
     return jsonify({
-        'email': current_user_email,
-        'tasks': tasks_data,
-        'inventory': inventory_data,
-        'reports': reports_data
+        'email': current_user_email,  # Confirming the identity of the user
+        'tasks': tasks_data,          # List of serialized tasks
+        'inventory': inventory_data,  # List of serialized inventory items
+        'reports': reports_data       # List of serialized reports
     })
-
 #     return render_template('dashboard.html', tasks=tasks, inventory=inventory, reports=reports)
    
 
@@ -345,6 +351,63 @@ def get_users():
 #         # In case of any exception, we roll back the session
 #         db.session.rollback()
 #         return jsonify({'message': 'Failed to add worker', 'error': str(e)}), 500
+
+# @app.route('/inventory', methods=['POST'])
+# def add_inventory():
+#     data = request.json
+
+#     new_inventory = InventoryModel(
+#         Item=data.get('item'),
+#         Category=data.get('category'),
+#         Quantity=data.get('quantity'),
+#         Units_of_Measurement=data.get('units'),
+#         Unit_Cost=data.get('cost'),
+#         Supplier=data.get('supplier'),
+#         Purchase_Date=data.get('purchaseDate'),
+#         Expiry_Date=data.get('expiryDate')
+#     )
+
+#     db.session.add(new_inventory)
+#     db.session.commit()
+
+#     return jsonify({'message': 'Inventory added successfully'}), 201
+
+# @app.route('/inventory', methods=['GET'])
+# def get_inventory():
+#     inventory = InventoryModel.query.all()
+#     return jsonify([inv.to_dict() for inv in inventory])
+
+# @app.route('/inventory/<int:id>', methods=['DELETE'])
+# def delete_inventory(id):
+#     inventory = InventoryModel.query.get(id)
+#     if inventory:
+#         db.session.delete(inventory)
+#         db.session.commit()
+#         return jsonify({'message': 'Inventory deleted successfully'}), 200
+#     else:
+#         return jsonify({'error': 'Inventory not found'}), 404
+
+# @app.route('/inventory/<int:id>', methods=['PATCH'])
+# def update_inventory(id):
+#     inventory = InventoryModel.query.get(id)
+#     if not inventory:
+#         return jsonify({'error': 'Inventory not found'}), 404
+
+#     data = request.json
+#     inventory.Item = data.get('item', inventory.Item)
+#     inventory.Category = data.get('category', inventory.Category)
+#     inventory.Quantity = data.get('quantity', inventory.Quantity)
+#     inventory.Units_of_Measurement = data.get('units', inventory.Units_of_Measurement)
+#     inventory.Unit_Cost = data.get('cost', inventory.Unit_Cost)
+#     inventory.Supplier = data.get('supplier', inventory.Supplier)
+#     inventory.Purchase_Date = data.get('purchaseDate', inventory.Purchase_Date)
+#     inventory.Expiry_Date = data.get('expiryDate', inventory.Expiry_Date)
+
+#     db.session.commit()
+#     return jsonify({'message': 'Inventory updated successfully'}), 200
+
+
+
 
 if __name__ == '__main__':
     app.run(debug=True)

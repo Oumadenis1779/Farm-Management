@@ -63,7 +63,7 @@ class Task(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))  # Foreign key referencing the User table
     assigned_user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     deadline = db.Column(db.DateTime)
-    
+
 # class Inventory(db.Model):
 #     id = db.Column(db.Integer, primary_key=True)
 #     name = db.Column(db.String(100), nullable=False)    
@@ -97,3 +97,33 @@ class Task(db.Model):
 #     user_id = db.Column(db.Integer, db.ForeignKey('user.user_id'))
 #     message = db.Column(db.Text)
 #     timestamp = db.Column(db.DateTime, index=True)
+    # class InventoryModel(db.Model):
+    # _tablename_ = 'inventories'
+
+    # id = db.Column(db.Integer, primary_key=True)
+    # Item = db.Column(db.String(20), nullable=False)
+    # Category = db.Column(db.String(50), nullable=False)
+    # Quantity = db.Column(db.Integer, nullable=False)
+    # Units_of_Measurement = db.Column(db.String(15), nullable=False)
+    # Unit_Cost = db.Column(db.Integer, nullable=False)
+    # Supplier = db.Column(db.String(50), nullable=False)
+    # Purchase_Date = db.Column(db.DateTime)
+    # Expiry_Date = db.Column(db.DateTime)
+
+    # def _repr_(self):
+    #     return f'<InventoryModel {self.Item}>'
+
+    # def to_dict(self):
+    #     return {
+    #         'id': self.id,
+    #         'item': self.Item,
+    #         'category': self.Category,
+    #         'quantity': self.Quantity,
+    #         'units': self.Units_of_Measurement,
+    #         'cost': self.Unit_Cost,
+    #         'supplier': self.Supplier,
+    #         'purchaseDate': self.Purchase_Date,
+    #         'expiryDate': self.Expiry_Date
+    #     }
+
+    
