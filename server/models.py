@@ -60,7 +60,7 @@ class Task(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     description = db.Column(db.String(255))
     task_type = db.Column(db.String(255))  # Renamed from 'type' to 'task_type'
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))  # Foreign key referencing the User table
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))  # Foreign key referencing the User table
     assigned_user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     deadline = db.Column(db.DateTime)
 
@@ -126,4 +126,16 @@ class Task(db.Model):
     #         'expiryDate': self.Expiry_Date
     #     }
 
-    
+class InventoryModel(db.Model):
+    __tablename__ = 'inventories'
+
+    id = db.Column(db.Integer, primary_key=True)
+    Item = db.Column(db.String(20), nullable=False)
+    Category = db.Column(db.String(50), nullable=False)
+    Quantity = db.Column(db.Integer, nullable=False)
+    Units_of_Measurement = db.Column(db.String(15), nullable=False)
+    Unit_Cost = db.Column(db.Integer, nullable=False)
+    Supplier = db.Column(db.String(50), nullable=False)
+    Purchase_Date = db.Column(db.DateTime)
+    Expiry_Date = db.Column(db.DateTime)
+   

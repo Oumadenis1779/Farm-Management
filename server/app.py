@@ -4,11 +4,12 @@ from flask import Flask, jsonify, request, session, redirect, url_for
 #from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
-from models import db, User,Task, register_user, check_user_credentials
+from models import db, User,Task, register_user, check_user_credentials,InventoryModel
 from flask_cors import CORS
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Session
 from werkzeug.security import generate_password_hash
+from datetime import datetime
 #  Item,Category, Task, Inventory, Report,
 
 # from datetime import datetime
@@ -231,181 +232,92 @@ def get_users():
 
 
 
-# Items and Category
+@app.route('/inventory', methods=['POST'])
+def add_inventory():
+    data = request.json
 
-# @app.route('/items', methods=['GET'])
-# def get_items():
-#     items = Item.query.all()
-#     item_list = [{'id': item.id, 'name': item.name, 'description': item.description, 'category': item.category.name} for item in items]
-#     return jsonify(item_list), 200
-
-# @app.route('/items/<int:item_id>', methods=['GET'])
-# def get_item(item_id):
-#     item = Item.query.get_or_404(item_id)
-#     item_data = {'id': item.id, 'name': item.name, 'description': item.description, 'category': item.category.name}
-#     return jsonify(item_data), 200
-
-# @app.route('/items', methods=['POST'])
-# def create_item():
-#     data = request.json
-#     name = data.get('name')
-#     description = data.get('description')
-#     category_name= data.get('category_name')
-
-#     category= category.query.filter_by(name=category_name).first()
-#     category_id = category_id
+ # Convert date strings to datetime objects
+    purchase_date = datetime.strptime(data.get('purchaseDate'), '%Y-%m-%d')
+    expiry_date = datetime.strptime(data.get('expiryDate'), '%Y-%m-%d')
 
 
-#     if not name or not description or not category_id:
-#         return jsonify({"msg": "Name, description, and category_id are required."}), 400
-    
-#     category = Category.query.get(category_id)
-#     if not category:
-#         return jsonify({"msg": "Category not found."}), 404
-#     if category:
-      
-#      category_id = category_id
-#      new_item = Item(name=name, description=description, category_id=category_id)
-#      db.session.add(new_item)
-#      db.session.commit()
-    
-#      return jsonify({"msg": "Item created successfully."}), 201
-#     else:
-#            return jsonify({"msg": "Category not found."}), 404
+    existing_inventory = InventoryModel.query.filter_by(
+        Item=data.get('item'),
+        Category=data.get('category'),
+        Supplier=data.get('supplier'),
+        Purchase_Date=purchase_date,
+        Expiry_Date=expiry_date
+    ).first()
 
-# @app.route('/items/<int:item_id>', methods=['PUT'])
-# def update_item(item_id):
-#     item = Item.query.get_or_404(item_id)
-#     data = request.json
-#     name = data.get('name', item.name)
-#     description = data.get('description', item.description)
-#     category_id = data.get('category_id', item.category_id)
+    if existing_inventory:
+        return jsonify({'error': 'Inventory already added'}), 400
 
-#     category = Category.query.get(category_id)
-#     if not category:
-#         return jsonify({"msg": "Category not found."}), 404
+    new_inventory = InventoryModel(
+        Item=data.get('item'),
+        Category=data.get('category'),
+        Quantity=data.get('quantity'),
+        Units_of_Measurement=data.get('units'),
+        Unit_Cost=data.get('cost'),
+        Supplier=data.get('supplier'),
+        Purchase_Date=purchase_date,
+        Expiry_Date=expiry_date
+    )
 
-#     item.name = name
-#     item.description = description
-#     item.category = category
-#     db.session.commit()
+    db.session.add(new_inventory)
+    db.session.commit()
 
-#     return jsonify({"msg": "Item updated successfully."}), 200
+    return jsonify({'message': 'Inventory added successfully'}), 201
 
-# @app.route('/items/<int:item_id>', methods=['DELETE'])
-# def delete_item(item_id):
-#     item = Item.query.get_or_404(item_id)
-#     db.session.delete(item)
-#     db.session.commit()
-#     return jsonify({"msg": "Item deleted successfully."}), 200
+@app.route('/inventory', methods=['GET'])
+def get_inventory():
+    inventory = InventoryModel.query.all()
+    serialized_inventory = [{
+        'Item': inv.Item,
+        'Category': inv.Category,
+        'Quantity': inv.Quantity,
+        'Units_of_Measurement': inv.Units_of_Measurement,
+        'Unit_Cost': inv.Unit_Cost,
+        'Supplier': inv.Supplier,
+        'Purchase_Date': inv.Purchase_Date.isoformat(),  # Convert datetime object to ISO format string
+        'Expiry_Date': inv.Expiry_Date.isoformat() if inv.Expiry_Date else None  # Convert datetime object to ISO format string or None if expiry date is None
+    } for inv in inventory]
+    return jsonify(serialized_inventory)
 
-# @app.route('/categories', methods=['GET'])
-# def get_categories():
-#     categories = Category.query.all()
-#     category_list = [{'id': category.id, 'name': category.name} for category in categories]
-#     return jsonify(category_list), 200
+@app.route('/inventory/<int:id>', methods=['DELETE'])
+def delete_inventory(id):
+    inventory = InventoryModel.query.get(id)
+    if inventory:
+        db.session.delete(inventory)
+        db.session.commit()
+        return jsonify({'message': 'Inventory deleted successfully'}), 200
+    else:
+        return jsonify({'error': 'Inventory not found'}), 404
 
+@app.route('/inventory/<int:id>', methods=['PATCH'])
+def update_inventory(id):
+    inventory = InventoryModel.query.get(id)
+    if not inventory:
+        return jsonify({'error': 'Inventory not found'}), 404
 
-# # Create a Task
-# @app.route('/tasks', methods=['POST'])
-# def add_task():
-#     data = request.json
+    data = request.json
+    inventory.Item = data.get('item', inventory.Item)
+    inventory.Category = data.get('category', inventory.Category)
+    inventory.Quantity = data.get('quantity', inventory.Quantity)
+    inventory.Units_of_Measurement = data.get('units', inventory.Units_of_Measurement)
+    inventory.Unit_Cost = data.get('cost', inventory.Unit_Cost)
+    inventory.Supplier = data.get('supplier', inventory.Supplier)
 
-#     # Validate request data
-#     if not data.get('description') or not data.get('type'):
-#         return jsonify({'error': 'Description and type are required'}), 400
+    # Convert date strings to Python datetime objects
+    purchase_date_str = data.get('purchaseDate')
+    if purchase_date_str:
+        inventory.Purchase_Date = datetime.strptime(purchase_date_str, '%Y-%m-%d')
 
-#     # Create new task object
-#     new_task = Task(
-#         description=data['description'],
-#         type=data['type'],
-#         assigned_user_id=data.get('assigned_user_id'),  # Corrected field name
-#         deadline=data.get('deadline')
-#     )
+    expiry_date_str = data.get('expiryDate')
+    if expiry_date_str:
+        inventory.Expiry_Date = datetime.strptime(expiry_date_str, '%Y-%m-%d')
 
-#     # Add task to database
-#     db.session.add(new_task)
-#     db.session.commit()
-
-#     return jsonify({'message': 'Task added successfully', 'task': new_task.to_dict()}), 201
-
-
-
-# @app.route('/workers', methods=['POST'])
-# def add_worker():
-#     data = request.get_json()
-    
-#     # Basic validation to ensure data contains required fields
-#     if not data or 'name' not in data or 'email' not in data:
-#         return jsonify({'message': 'Missing name or email'}), 400
-
-#     # Creating a new Worker object
-#     new_worker = Worker(name=data['name'], email=data['email'])
-
-#     # Adding the new Worker to the session and committing
-#     try:
-#         db.session.add(new_worker)
-#         db.session.commit()
-#         return jsonify({'message': 'Worker added successfully', 'id': new_worker.id}), 201
-#     except Exception as e:
-#         # In case of any exception, we roll back the session
-#         db.session.rollback()
-#         return jsonify({'message': 'Failed to add worker', 'error': str(e)}), 500
-
-# @app.route('/inventory', methods=['POST'])
-# def add_inventory():
-#     data = request.json
-
-#     new_inventory = InventoryModel(
-#         Item=data.get('item'),
-#         Category=data.get('category'),
-#         Quantity=data.get('quantity'),
-#         Units_of_Measurement=data.get('units'),
-#         Unit_Cost=data.get('cost'),
-#         Supplier=data.get('supplier'),
-#         Purchase_Date=data.get('purchaseDate'),
-#         Expiry_Date=data.get('expiryDate')
-#     )
-
-#     db.session.add(new_inventory)
-#     db.session.commit()
-
-#     return jsonify({'message': 'Inventory added successfully'}), 201
-
-# @app.route('/inventory', methods=['GET'])
-# def get_inventory():
-#     inventory = InventoryModel.query.all()
-#     return jsonify([inv.to_dict() for inv in inventory])
-
-# @app.route('/inventory/<int:id>', methods=['DELETE'])
-# def delete_inventory(id):
-#     inventory = InventoryModel.query.get(id)
-#     if inventory:
-#         db.session.delete(inventory)
-#         db.session.commit()
-#         return jsonify({'message': 'Inventory deleted successfully'}), 200
-#     else:
-#         return jsonify({'error': 'Inventory not found'}), 404
-
-# @app.route('/inventory/<int:id>', methods=['PATCH'])
-# def update_inventory(id):
-#     inventory = InventoryModel.query.get(id)
-#     if not inventory:
-#         return jsonify({'error': 'Inventory not found'}), 404
-
-#     data = request.json
-#     inventory.Item = data.get('item', inventory.Item)
-#     inventory.Category = data.get('category', inventory.Category)
-#     inventory.Quantity = data.get('quantity', inventory.Quantity)
-#     inventory.Units_of_Measurement = data.get('units', inventory.Units_of_Measurement)
-#     inventory.Unit_Cost = data.get('cost', inventory.Unit_Cost)
-#     inventory.Supplier = data.get('supplier', inventory.Supplier)
-#     inventory.Purchase_Date = data.get('purchaseDate', inventory.Purchase_Date)
-#     inventory.Expiry_Date = data.get('expiryDate', inventory.Expiry_Date)
-
-#     db.session.commit()
-#     return jsonify({'message': 'Inventory updated successfully'}), 200
-
+    db.session.commit()
+    return jsonify({'message': 'Inventory updated successfully'}), 200
 
 
 
