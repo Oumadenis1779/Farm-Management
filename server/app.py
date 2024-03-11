@@ -1,7 +1,6 @@
 # app.py
 
 from flask import Flask, jsonify, request, session, redirect, url_for
-#from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 from models import db, User,Task, register_user, check_user_credentials,InventoryModel
@@ -10,9 +9,7 @@ from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Session
 from werkzeug.security import generate_password_hash
 from datetime import datetime
-#  Item,Category, Task, Inventory, Report,
 
-# from datetime import datetime
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///farm_management.db'
@@ -23,7 +20,7 @@ CORS(app)
 migrate=Migrate(app,db)
 db.init_app(app)
 jwt = JWTManager(app)
-#db = SQLAlchemy(app)
+
 
 with app.app_context():
     db.create_all()
@@ -320,6 +317,106 @@ def update_inventory(id):
     return jsonify({'message': 'Inventory updated successfully'}), 200
 
 
+@app.route('/task', methods=['POST'])
+def create_task():
+    data = request.json
+    description = data.get('description')
+    task_type = data.get('task_type')
+    user_id = data.get('user_id')
+    assigned_user_id = data.get('assigned_user_id')
+    deadline_str = data.get('deadline')
+
+    if deadline_str:
+        try:
+            deadline = datetime.strptime(deadline_str, '%Y-%m-%dT%H:%M:%S')
+        except ValueError as e:
+            return jsonify({'error': f'Invalid deadline format: {str(e)}'}), 400
+    else:
+        deadline = None
+
+    if not all([description, task_type, user_id]):
+        return jsonify({'error': 'Description, task_type, and user_id are required'}), 400
+
+    # Check if a task with the same attributes already exists
+    existing_task = Task.query.filter_by(description=description, task_type=task_type, user_id=user_id, assigned_user_id=assigned_user_id, deadline=deadline).first()
+    if existing_task:
+        return jsonify({'error': 'Task already exists'}), 409  # HTTP 409 Conflict
+
+    new_task = Task(description=description, task_type=task_type, user_id=user_id, assigned_user_id=assigned_user_id, deadline=deadline)
+
+    db.session.add(new_task)
+    db.session.commit()
+
+    return jsonify({'message': 'Task created successfully', 'task_id': new_task.id}), 201
+
+
+# GET TASKS ROUTE 
+@app.route('/tasks', methods=['GET'])
+def get_tasks():
+    tasks = Task.query.all()
+    tasks_data = [{
+        'id': task.id,
+        'description': task.description,
+        'task_type': task.task_type,
+        'user_id': task.user_id,
+        'assigned_user_id': task.assigned_user_id,
+        'deadline': task.deadline.isoformat() if task.deadline else None
+    } for task in tasks]
+    return jsonify(tasks_data), 200
+
+@app.route('/task/<int:task_id>', methods=['GET'])
+def get_task(task_id):
+    task = Task.query.get(task_id)
+    if task:
+        task_data = {
+            'id': task.id,
+            'description': task.description,
+            'task_type': task.task_type,
+            'user_id': task.user_id,
+            'assigned_user_id': task.assigned_user_id,
+            'deadline': task.deadline.isoformat() if task.deadline else None
+        }
+        return jsonify(task_data), 200
+    else:
+        return jsonify({'error': 'Task not found'}), 404
+
+# PATCH ROUTE
+@app.route('/task/<int:task_id>', methods=['PATCH'])
+def update_task(task_id):
+    task = Task.query.get(task_id)
+    if task is None:
+        return jsonify({'error': 'Task not found'}), 404
+
+    data = request.json
+    task.description = data.get('description', task.description)
+    task.task_type = data.get('task_type', task.task_type)
+    task.user_id = data.get('user_id', task.user_id)
+    task.assigned_user_id = data.get('assigned_user_id', task.assigned_user_id)
+
+    deadline_str = data.get('deadline')
+    if deadline_str:
+        task.deadline = datetime.strptime(deadline_str, '%Y-%m-%dT%H:%M:%S')
+
+    db.session.commit()
+    return jsonify({'message': 'Task updated successfully'}), 200
+
+# DELETE TASK
+@app.route('/task/<int:task_id>', methods=['DELETE'])
+def delete_task(task_id):
+    task = Task.query.get(task_id)
+    if task:
+        db.session.delete(task)
+        db.session.commit()
+        return jsonify({'message': 'Task deleted successfully'}), 200
+    else:
+        return jsonify({'error': 'Task not found'}), 404
+
+
 
 if __name__ == '__main__':
+    with app.app_context():
+        db.create_all()  # Create database tables for our data models
     app.run(debug=True)
+
+# if __name__ == '__main__':
+#     app.run(debug=True)

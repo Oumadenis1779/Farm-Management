@@ -64,67 +64,7 @@ class Task(db.Model):
     assigned_user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     deadline = db.Column(db.DateTime)
 
-# class Inventory(db.Model):
-#     id = db.Column(db.Integer, primary_key=True)
-#     name = db.Column(db.String(100), nullable=False)    
-#     quantity = db.Column(db.Integer, nullable=False)
-#     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-#     user = db.relationship("User", back_populates="inventory")
 
-# class Item(db.Model):
-#     id = db.Column(db.Integer, primary_key=True)
-#     name = db.Column(db.String(100), nullable=False)
-#     description = db.Column(db.Text, nullable=True)
-#     category_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=False)
-#     category = relationship("Category", back_populates="items")
-
-# class Report(db.Model):
-#     id = db.Column(db.Integer, primary_key=True)
-#     title = db.Column(db.String(100), nullable=False)
-#     description = db.Column(db.Text, nullable=False)
-#     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-#     user = relationship("User", back_populates="reports")
-
-# class Category(db.Model):
-#     id = db.Column(db.Integer, primary_key=True)
-#     name = db.Column(db.String(100), nullable=False)
-#     items = relationship("Item", back_populates="category")
-
-# class Notifications(db.Model):
-#     notification_id = db.Column(db.Integer, primary_key=True)
-#     farmer_id = db.Column(db.Integer, db.ForeignKey('user.user_id'))
-#     email = db.Column(db.String(254), unique=True)
-#     user_id = db.Column(db.Integer, db.ForeignKey('user.user_id'))
-#     message = db.Column(db.Text)
-#     timestamp = db.Column(db.DateTime, index=True)
-    # class InventoryModel(db.Model):
-    # _tablename_ = 'inventories'
-
-    # id = db.Column(db.Integer, primary_key=True)
-    # Item = db.Column(db.String(20), nullable=False)
-    # Category = db.Column(db.String(50), nullable=False)
-    # Quantity = db.Column(db.Integer, nullable=False)
-    # Units_of_Measurement = db.Column(db.String(15), nullable=False)
-    # Unit_Cost = db.Column(db.Integer, nullable=False)
-    # Supplier = db.Column(db.String(50), nullable=False)
-    # Purchase_Date = db.Column(db.DateTime)
-    # Expiry_Date = db.Column(db.DateTime)
-
-    # def _repr_(self):
-    #     return f'<InventoryModel {self.Item}>'
-
-    # def to_dict(self):
-    #     return {
-    #         'id': self.id,
-    #         'item': self.Item,
-    #         'category': self.Category,
-    #         'quantity': self.Quantity,
-    #         'units': self.Units_of_Measurement,
-    #         'cost': self.Unit_Cost,
-    #         'supplier': self.Supplier,
-    #         'purchaseDate': self.Purchase_Date,
-    #         'expiryDate': self.Expiry_Date
-    #     }
 
 class InventoryModel(db.Model):
     __tablename__ = 'inventories'
