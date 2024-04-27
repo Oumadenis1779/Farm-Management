@@ -1,0 +1,20 @@
+.custom-login-button {
+  align-items: center;
+  justify-content: center;
+  color: #3f6212;
+  
+  }
+  
+  .text-center > span {
+    margin-right: 320px; /* Ajoutez la marge souhaitée */
+  }
+  
+  .second-form-group{
+      margin-top: 45px; /* Ou toute autre valeur de marge souhaitée */
+    }
+   
+  
+  .second-form-group1{
+    margin-top: 20px;
+  }
+

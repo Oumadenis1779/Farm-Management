@@ -1,0 +1,72 @@
+.logo{
+    padding-top: 1cm;
+}
+
+.nav-container{
+    padding-left:5cm;
+    padding-top: 1px;
+}
+
+.welcome-container{
+    padding-right: 2cm;
+}
+
+a:hover {
+    color: lime;
+  }
+  
+  a:active {
+    color: lime;
+  }
+  
+  .smaller-input {
+    width: calc(100% - 20px); /* Adjust the width as needed */
+    border: 1px solid #ccc; /* Border color */
+    background-color: white; /* Background color */
+  }
+  
+  .smaller-input::placeholder {
+    color: #ccc; /* Placeholder color */
+  }
+  
+  .smaller-input:focus {
+    border-color: #007bff; /* Border color on focus */
+  }
+  
+  .btn.smaller-input {
+    width: calc(100% - 20px); /* Adjust the width as needed */
+    border: 1px solid #ccc; /* Border color */
+    background-color: lightgrey; /* Background color */
+    color: black; /* Button text color */
+  }
+  
+  .btn.smaller-input:hover {
+    background-color: #f0f0f0; /* Button background color on hover */
+    color: black; /* Button text color on hover */
+  }
+  
+  .table-container {
+    overflow-x: auto;
+    margin-top: 20px; /* Adjust as needed */
+  }
+  
+  .table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .table th,
+  .table td {
+    padding: 8px;
+    text-align: left;
+    border-bottom: 1px solid #dee2e6;
+  }
+  
+  .table th {
+    background-color: #f8f9fa;
+  }
+  
+  .table tbody tr:last-child td {
+    border-bottom: none;
+  }
+  

@@ -1,0 +1,47 @@
+.navbar {
+    display: flex;
+}
+
+.nav-item{
+    display: flex;
+}
+
+
+
+
+.carousel-control-next-icon {
+    color-scheme: black;
+}
+
+.footer-container{
+    display: flex;
+}
+
+.header-container{
+    padding-left: 5cm;
+    padding-right: 5cm;
+}
+
+.wfooter-container{
+    background-color: gainsboro;
+}
+
+.btn-container{
+    align-items: center;
+    justify-content: center;
+    color: #3f6212;
+}
+
+.nav-item{
+    padding-left: 100px;
+    padding-top: 8px;
+}
+
+a.link{   
+    text-decoration: none;
+}
+
+.image-container img {
+    max-width: 100%;
+    height: auto;
+}
